@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.special import zeta
 
 # Non-normalized probability of state occupation
 def boltzmann(energy, temperature):
@@ -8,9 +9,9 @@ def boltzmann(energy, temperature):
 
 def single_state_partition_function(energy, temperature):
     beta = 1./temperature
-    return np.exp(-beta*energy/2) / (1 - np.exp(-beta*energy))
+    return 0.5/np.sinh(beta*energy*0.5)
 
-L = 10.0
+L = 1.0
 h = 1.0
 c = 1.0
 root_frequency = c/(2*L)
@@ -18,7 +19,7 @@ def photon_energy(n_tuple):
     return h*root_frequency*np.linalg.norm(n_tuple)
 
 # Calculates a cutoff n, where probabilities become insignificant
-def n_max(temperature, frac_thresh=1.e-3):
+def n_max(temperature, frac_thresh=1.e-5):
     max_energy = -temperature*np.log(frac_thresh)
     return int(max_energy/(h*root_frequency))
 
@@ -30,9 +31,17 @@ def partition_function(temperature, n_max):
             for k in range(n_max):
                 n_tuple = np.array((i+1,j+1,k+1))
                 if np.linalg.norm(n_tuple)<=n_max:
-                    part_func += single_state_partition_function(photon_energy(n_tuple), temperature)
+                    part_func += 2.*single_state_partition_function(photon_energy(n_tuple), temperature)
     return part_func
 
+def partition_function_2(temperature):
+    a = h*root_frequency/temperature
+    return 2.*np.pi*a**-3*zeta(3, 0.5)
+
+temperature = 1.
+print(3/2*partition_function(temperature, n_max(temperature)))
+print(partition_function_2(temperature))
+input()
 ################################
 
 ## Sampling with inverse CDF
@@ -46,10 +55,6 @@ def rand_theta():
 def rand_phi():
     temp = rng.uniform()
     return np.arccos(-temp+1)
-
-# The integral of x^2*exp(-a*x)
-def int_x2_e_min_ax(x, a, b):
-    return b * (2./a**3 - ((a*x)**2 + 2.*a*x + 2.) * np.exp(-a*x))
 
 # Invert the integral of x^2*exp(-a*x) via binary search
 def inv_int_x2_e_min_ax(y, a, b, tolerance=1e-3):
@@ -121,8 +126,9 @@ if not const_radius:
     temperature = 1.
     max_n = n_max(temperature)
     print(max_n)
-    part_func = partition_function(temperature, max_n)
-    print(part_func)
+    #part_func = partition_function(temperature, max_n)
+    #print(part_func)
+    part_func = 1.
     test_n = np.zeros(sample_number)
 
 for i in range(sample_number):
