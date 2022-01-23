@@ -18,30 +18,10 @@ root_frequency = c/(2*L)
 def photon_energy(n_tuple):
     return h*root_frequency*np.linalg.norm(n_tuple)
 
-# Calculates a cutoff n, where probabilities become insignificant
-def n_max(temperature, frac_thresh=1.e-5):
-    max_energy = -temperature*np.log(frac_thresh)
-    return int(max_energy/(h*root_frequency))
-
-# Serves as a normalization factor for the boltzmann distribution
-def partition_function(temperature, n_max):
-    part_func = 0.
-    for i in range(n_max):
-        for j in range(n_max):
-            for k in range(n_max):
-                n_tuple = np.array((i+1,j+1,k+1))
-                if np.linalg.norm(n_tuple)<=n_max:
-                    part_func += 2.*single_state_partition_function(photon_energy(n_tuple), temperature)
-    return part_func
-
-def partition_function_2(temperature):
+def partition_function(temperature):
     a = h*root_frequency/temperature
     return 2.*np.pi*a**-3*zeta(3, 0.5)
 
-temperature = 1.
-print(3/2*partition_function(temperature, n_max(temperature)))
-print(partition_function_2(temperature))
-input()
 ################################
 
 ## Sampling with inverse CDF
